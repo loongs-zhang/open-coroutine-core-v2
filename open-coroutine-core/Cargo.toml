@@ -53,5 +53,8 @@ default = ["preemptive-schedule"]
 # Not enable for default.
 preemptive-schedule = []
 
+# debug message.
+debug = []
+
 # Enable all features except stack-trace
-full = ["preemptive-schedule"]
+full = ["preemptive-schedule", "debug"]
