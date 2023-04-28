@@ -177,7 +177,10 @@ impl<'c, Param, Yield, Return> Coroutine<'c, Param, Yield, Return> {
     }
 
     pub fn set_state(&self, state: CoroutineState) -> CoroutineState {
-        self.state.replace(state)
+        let old = self.state.replace(state);
+        #[cfg(feature = "debug")]
+        println!("{} {}->{}", self.get_name(), old, state);
+        old
     }
 
     pub fn is_finished(&self) -> bool {
@@ -224,13 +227,19 @@ impl<'c, Param, Yield, Return> Coroutine<'c, Param, Yield, Return> {
                 current = CoroutineState::Running;
                 _ = self.set_state(current);
             }
-            _ => panic!("unexpected state {current}"),
+            _ => panic!("{} unexpected state {current}", self.get_name()),
         };
         Coroutine::<Param, Yield, Return>::init_current(self);
         let state = match self.sp.borrow_mut().resume(arg) {
             CoroutineResult::Return(()) => {
                 let state = CoroutineState::Finished;
-                assert_eq!(CoroutineState::Running, self.set_state(state));
+                let previous = self.set_state(state);
+                assert_eq!(
+                    CoroutineState::Running,
+                    previous,
+                    "{} unexpected state {previous}",
+                    self.get_name()
+                );
                 state
             }
             CoroutineResult::Yield(y) => {
@@ -249,7 +258,7 @@ impl<'c, Param, Yield, Return> Coroutine<'c, Param, Yield, Return> {
                     CoroutineState::SystemCall(syscall_name) => {
                         CoroutineState::SystemCall(syscall_name)
                     }
-                    _ => panic!("unexpected state {current}"),
+                    _ => panic!("{} unexpected state {current}", self.get_name()),
                 }
             }
         };
@@ -323,6 +332,10 @@ mod tests {
     fn test_syscall() {
         let coroutine = co!(|suspender, param| {
             assert_eq!(1, param);
+            assert_eq!(
+                CoroutineState::Running,
+                Coroutine::<i32, i32, i32>::current().unwrap().get_state()
+            );
             unbreakable!(
                 {
                     assert_eq!(3, suspender.suspend_with(2));
@@ -330,9 +343,10 @@ mod tests {
                 },
                 "sleep"
             );
-            if let Some(co) = Coroutine::<i32, i32, i32>::current() {
-                assert_eq!(CoroutineState::Running, co.get_state());
-            }
+            assert_eq!(
+                CoroutineState::Running,
+                Coroutine::<i32, i32, i32>::current().unwrap().get_state()
+            );
             6
         });
         assert_eq!(
