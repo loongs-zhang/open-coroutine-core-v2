@@ -16,6 +16,8 @@ pub mod sleep;
 
 pub mod socket;
 
+pub mod read;
+
 pub mod write;
 
 extern "C" {
