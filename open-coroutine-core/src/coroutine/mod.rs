@@ -219,7 +219,7 @@ impl<'c, Param, Yield, Return> Coroutine<'c, Param, Yield, Return> {
                 current = CoroutineState::Running;
                 _ = self.set_state(current);
             }
-            _ => panic!("unexpected state {current}"),
+            _ => panic!("{} unexpected state {current}", self.get_name()),
         };
         Coroutine::<Param, Yield, Return>::init_current(self);
         let state = match self.sp.resume(arg) {
@@ -245,7 +245,7 @@ impl<'c, Param, Yield, Return> Coroutine<'c, Param, Yield, Return> {
                     CoroutineState::SystemCall(syscall_name) => {
                         CoroutineState::SystemCall(syscall_name)
                     }
-                    _ => panic!("unexpected state {current}"),
+                    _ => panic!("{} unexpected state {current}", self.get_name()),
                 }
             }
         };
