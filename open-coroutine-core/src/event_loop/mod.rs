@@ -1,4 +1,5 @@
 use crate::coroutine::suspender::Suspender;
+use crate::coroutine::CoroutineState;
 use crate::event_loop::event::Events;
 use crate::event_loop::interest::Interest;
 use crate::event_loop::join::JoinHandle;
@@ -107,6 +108,10 @@ impl EventLoops {
         let time = timeout.unwrap_or(Duration::MAX);
         if let Some(suspender) = Suspender::<(), ()>::current() {
             suspender.delay(time);
+            assert_eq!(
+                CoroutineState::Running,
+                SchedulableCoroutine::current().unwrap().get_state()
+            );
             return Ok(());
         }
         Self::slice_wait(time, EventLoops::next(false))
@@ -119,6 +124,11 @@ impl EventLoops {
         if let Some(suspender) = Suspender::<(), ()>::current() {
             suspender.delay(time);
             //回来的时候事件已经发生了
+            let current = SchedulableCoroutine::current().unwrap().get_state();
+            match current {
+                CoroutineState::SystemCall(_) => {}
+                _ => panic!("unexpected state {current}"),
+            };
             return Ok(());
         }
         Self::slice_wait(time, event_loop)
