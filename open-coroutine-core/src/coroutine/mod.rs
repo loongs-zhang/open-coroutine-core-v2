@@ -292,7 +292,6 @@ impl<'c, Param, Yield, Return> Ord for Coroutine<'c, Param, Yield, Return> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::unbreakable;
 
     #[test]
     fn test_return() {
