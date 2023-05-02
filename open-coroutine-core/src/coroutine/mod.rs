@@ -214,7 +214,6 @@ impl<'c, Param, Yield, Return> Coroutine<'c, Param, Yield, Return> {
             CoroutineState::Finished => {
                 return CoroutineState::Finished;
             }
-            CoroutineState::SystemCall(_) => {}
             CoroutineState::Created | CoroutineState::Ready | CoroutineState::Suspend(0) => {
                 current = CoroutineState::Running;
                 _ = self.set_state(current);
@@ -313,30 +312,6 @@ mod tests {
         });
         assert_eq!(CoroutineState::Suspend(0), coroutine.resume_with(1));
         assert_eq!(Some(2), coroutine.get_yield());
-    }
-
-    #[test]
-    fn test_syscall() {
-        let mut coroutine = co!(|suspender, param| {
-            assert_eq!(1, param);
-            unbreakable!(
-                {
-                    assert_eq!(3, suspender.suspend_with(2));
-                    assert_eq!(5, suspender.suspend_with(4));
-                },
-                "read"
-            );
-            if let Some(co) = Coroutine::<i32, i32, i32>::current() {
-                assert_eq!(CoroutineState::Running, co.get_state());
-            }
-            6
-        });
-        assert_eq!(CoroutineState::SystemCall("read"), coroutine.resume_with(1));
-        assert_eq!(Some(2), coroutine.get_yield());
-        assert_eq!(CoroutineState::SystemCall("read"), coroutine.resume_with(3));
-        assert_eq!(Some(4), coroutine.get_yield());
-        assert_eq!(CoroutineState::Finished, coroutine.resume_with(5));
-        assert_eq!(Some(6), coroutine.get_result());
     }
 
     #[test]

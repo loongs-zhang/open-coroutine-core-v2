@@ -181,6 +181,11 @@ impl Scheduler {
     pub fn resume_syscall(&self, co_name: &'static str) {
         unsafe {
             if let Some(coroutine) = SYSTEM_CALL_TABLE.remove(&co_name) {
+                let old = coroutine.set_state(CoroutineState::Ready);
+                match old {
+                    CoroutineState::SystemCall(_) => {}
+                    _ => panic!("unexpected state {old}"),
+                }
                 self.ready.push_back(coroutine);
             }
         }
