@@ -112,24 +112,32 @@ impl EventLoops {
         Self::slice_wait(time, EventLoops::next(false))
     }
 
-    pub fn wait_read_event(fd: libc::c_int, timeout: Option<Duration>) -> std::io::Result<()> {
+    pub fn wait_read_event(
+        fd: libc::c_int,
+        timeout: Option<Duration>,
+        syscall_name: &str,
+    ) -> std::io::Result<()> {
         let event_loop = EventLoops::next(false);
         event_loop.add_read_event(fd)?;
         let time = timeout.unwrap_or(Duration::MAX);
         if let Some(suspender) = Suspender::<(), ()>::current() {
-            suspender.delay(time);
+            suspender.syscall(syscall_name);
             //回来的时候事件已经发生了
             return Ok(());
         }
         Self::slice_wait(time, event_loop)
     }
 
-    pub fn wait_write_event(fd: libc::c_int, timeout: Option<Duration>) -> std::io::Result<()> {
+    pub fn wait_write_event(
+        fd: libc::c_int,
+        timeout: Option<Duration>,
+        syscall_name: &str,
+    ) -> std::io::Result<()> {
         let event_loop = EventLoops::next(false);
         event_loop.add_write_event(fd)?;
         let time = timeout.unwrap_or(Duration::MAX);
         if let Some(suspender) = Suspender::<(), ()>::current() {
-            suspender.delay(time);
+            suspender.syscall(syscall_name);
             //回来的时候事件已经发生了
             return Ok(());
         }

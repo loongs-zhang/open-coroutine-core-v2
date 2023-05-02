@@ -102,7 +102,7 @@ impl Scheduler {
                                 let old = coroutine.set_state(CoroutineState::Ready);
                                 match old {
                                     CoroutineState::Suspend(_) => {}
-                                    _ => panic!("unexpected state {old}"),
+                                    _ => panic!("{} unexpected state {old}", coroutine.get_name()),
                                 };
                                 //把到时间的协程加入就绪队列
                                 self.ready.push_back(coroutine);
@@ -181,6 +181,11 @@ impl Scheduler {
     pub fn resume_syscall(&self, co_name: &'static str) {
         unsafe {
             if let Some(coroutine) = SYSTEM_CALL_TABLE.remove(&co_name) {
+                let old = coroutine.set_state(CoroutineState::Ready);
+                match old {
+                    CoroutineState::SystemCall(_) => {}
+                    _ => panic!("{} unexpected state {old}", coroutine.get_name()),
+                };
                 self.ready.push_back(coroutine);
             }
         }
