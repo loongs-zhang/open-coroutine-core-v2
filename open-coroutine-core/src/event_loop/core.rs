@@ -3,7 +3,7 @@ use crate::event_loop::event::Events;
 use crate::event_loop::interest::Interest;
 use crate::event_loop::join::JoinHandle;
 use crate::event_loop::selector::Selector;
-use crate::event_loop::task::Task;
+use crate::pool::task::Task;
 use crate::scheduler::listener::Listener;
 use crate::scheduler::{SchedulableCoroutine, Scheduler};
 use crossbeam_deque::{Injector, Steal};
