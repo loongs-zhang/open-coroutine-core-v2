@@ -125,6 +125,11 @@ impl CoroutinePool {
             .try_timeout_schedule(open_coroutine_timer::get_timeout_time(time))
     }
 
+    //只有框架级crate才需要使用此方法
+    pub fn resume_syscall(&self, co_name: &'static str) {
+        self.workers.resume_syscall(co_name);
+    }
+
     pub fn get_result(task_name: &'static str) -> Option<usize> {
         unsafe { RESULT_TABLE.remove(&task_name) }
     }
