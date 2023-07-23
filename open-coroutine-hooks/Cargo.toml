@@ -28,5 +28,3 @@ windows-sys = { version = "0.48.0", features = [
 
 [lib]
 crate-type = ["cdylib"]
-name = "open_coroutine_hooks"
-path = "src/lib.rs"
