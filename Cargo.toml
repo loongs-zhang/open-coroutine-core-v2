@@ -10,13 +10,31 @@ categories = ["data-structures", "concurrency", "asynchronous", "web-programming
 license = "LGPL-3.0 OR Apache-2.0"
 
 [dependencies]
+cfg-if = "1.0.0"
 libc = "0.2.119"
 open-coroutine-core = { version = "0.4.0", path = "open-coroutine-core" }
 open-coroutine-hooks = { version = "0.4.0", path = "open-coroutine-hooks" }
 open-coroutine-macros = { version = "0.1.1", path = "open-coroutine-macros" }
 
 [build-dependencies]
+cfg-if = "1.0.0"
 glob = "0.3.1"
+
+[features]
+default = ["full"]
+
+# Provide preemptive scheduling implementation.
+# Enable for default.
+preemptive-schedule = [
+    "open-coroutine-core/preemptive-schedule",
+    "open-coroutine-hooks/preemptive-schedule"
+]
+
+# Hook syscalls, enable for default.
+hook = []
+
+# Enable all features
+full = ["preemptive-schedule", "hook"]
 
 [workspace]
 members = [

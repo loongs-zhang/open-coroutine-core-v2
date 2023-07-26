@@ -46,27 +46,35 @@
     clippy::single_char_lifetime_names, // TODO: change lifetime names
 )]
 
-pub use open_coroutine_core::config::Config;
-pub use open_coroutine_macros::*;
+pub use open_coroutine_core::event_loop::join::JoinHandle;
+pub use open_coroutine_core::event_loop::EventLoops;
+pub use open_coroutine_hooks::unix::{read::*, sleep::*, socket::*, write::*};
 
-pub mod join;
+cfg_if::cfg_if! {
+    if #[cfg(feature = "hook")] {
+        pub use open_coroutine_core::config::Config;
+        pub use open_coroutine_macros::*;
 
-pub mod coroutine;
+        pub mod join;
 
-extern "C" {
-    fn init_config(config: Config);
-}
+        pub mod coroutine;
 
-pub fn init(config: Config) {
-    unsafe { init_config(config) };
-}
+        extern "C" {
+            fn init_config(config: Config);
+        }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+        pub fn init(config: Config) {
+            unsafe { init_config(config) };
+        }
 
-    #[test]
-    fn test_link() {
-        init(Config::default());
+        #[cfg(test)]
+        mod tests {
+            use super::*;
+
+            #[test]
+            fn test_link() {
+                init(Config::default());
+            }
+        }
     }
 }

@@ -27,4 +27,14 @@ windows-sys = { version = "0.48.0", features = [
 ] }
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["preemptive-schedule"]
+
+# Provide preemptive scheduling implementation.
+# Enable for default.
+preemptive-schedule = ["open-coroutine-core/preemptive-schedule"]
+
+# Enable all features
+full = ["preemptive-schedule"]
