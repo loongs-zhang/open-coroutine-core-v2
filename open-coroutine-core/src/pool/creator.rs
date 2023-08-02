@@ -3,19 +3,17 @@ use crate::scheduler::listener::Listener;
 use crate::scheduler::SchedulableCoroutine;
 
 #[derive(Debug)]
-pub(crate) struct CoroutineCreator {
-    pool: &'static CoroutinePool,
+pub(crate) struct CoroutineCreator<'p> {
+    pool: &'p CoroutinePool,
 }
 
-impl CoroutineCreator {
-    pub(crate) fn new(pool: &mut CoroutinePool) -> Self {
-        CoroutineCreator {
-            pool: unsafe { Box::leak(Box::from_raw(pool)) },
-        }
+impl<'p> CoroutineCreator<'p> {
+    pub(crate) fn new(pool: &'p CoroutinePool) -> Self {
+        CoroutineCreator { pool }
     }
 }
 
-impl Listener for CoroutineCreator {
+impl Listener for CoroutineCreator<'static> {
     fn on_suspend(&self, _co: &SchedulableCoroutine) {
         _ = self.pool.grow();
     }

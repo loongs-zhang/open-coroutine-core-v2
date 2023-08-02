@@ -6,7 +6,7 @@ use crate::scheduler::Scheduler;
 use crossbeam_deque::{Injector, Steal};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Duration;
 use uuid::Uuid;
 
@@ -36,6 +36,7 @@ pub struct CoroutinePool {
     keep_alive_time: u64,
     //阻滞器
     blocker: &'static dyn Blocker,
+    inited: AtomicBool,
 }
 
 impl CoroutinePool {
@@ -46,7 +47,7 @@ impl CoroutinePool {
         keep_alive_time: u64,
         blocker: impl Blocker + 'static,
     ) -> Self {
-        let mut pool = CoroutinePool {
+        CoroutinePool {
             workers: Scheduler::new(),
             stack_size,
             running: AtomicUsize::new(0),
@@ -55,12 +56,8 @@ impl CoroutinePool {
             work_queue: Injector::default(),
             keep_alive_time,
             blocker: Box::leak(Box::new(blocker)),
-        };
-
-        let listener = CoroutineCreator::new(&mut pool);
-        pool.workers.add_listener(listener);
-
-        pool
+            inited: AtomicBool::new(false),
+        }
     }
 
     pub fn submit(
@@ -120,6 +117,13 @@ impl CoroutinePool {
     }
 
     pub fn try_timed_schedule(&'static self, time: Duration) -> u64 {
+        if self
+            .inited
+            .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
+            .is_ok()
+        {
+            self.workers.add_listener(CoroutineCreator::new(self));
+        }
         _ = self.grow();
         self.workers
             .try_timeout_schedule(open_coroutine_timer::get_timeout_time(time))
