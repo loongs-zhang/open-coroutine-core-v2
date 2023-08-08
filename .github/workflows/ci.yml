@@ -80,6 +80,7 @@ jobs:
         if: always()
         run: |
           cd ${{ github.workspace }}/examples
+          sudo apt-get install libelf-dev
           sudo bash -c "sudo -u runner RUSTUP_TOOLCHAIN=${{ matrix.rust }} RUST_BACKTRACE=1 /home/runner/.cargo/bin/cargo run --example sleep_not_co --release"
       - name: Run cargo release sleep coroutine example
         if: always()
