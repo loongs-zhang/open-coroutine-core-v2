@@ -2,8 +2,8 @@ fn main() {
     cfg_if::cfg_if! {
         if #[cfg(target_os = "linux")] {
             use xdpsock::{
-                socket::{BindFlags, SocketConfig, SocketConfigBuilder, XdpFlags},
-                umem::{UmemConfig, UmemConfigBuilder},
+                socket::{BindFlags, SocketConfigBuilder, XdpFlags},
+                umem::UmemConfigBuilder,
                 xsk::Xsk2,
             };
 
