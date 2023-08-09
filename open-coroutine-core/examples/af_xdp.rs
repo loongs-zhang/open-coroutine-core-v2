@@ -21,8 +21,8 @@ fn main() {
             let socket_config = SocketConfigBuilder::new()
                 .tx_queue_size(4096)
                 .rx_queue_size(4096)
-                .bind_flags(BindFlags::XDP_ZEROCOPY) // Check your driver to see if you can use ZERO_COPY
-                .xdp_flags(XdpFlags::XDP_FLAGS_DRV_MODE) // Check your driver to see if you can use DRV_MODE
+                .bind_flags(BindFlags::XDP_COPY) // Check your driver to see if you can use ZERO_COPY
+                .xdp_flags(XdpFlags::XDP_FLAGS_SKB_MODE) // Check your driver to see if you can use DRV_MODE
                 .build()
                 .unwrap();
 
@@ -35,7 +35,7 @@ fn main() {
             xsk.send(&pkt);
 
             // Receiving a packet
-            let (recvd_pkt, len) = xsk.recv().expect("failed to recv");
+            let (_recvd_pkt, _len) = xsk.recv().expect("failed to recv");
         }
     }
 }
