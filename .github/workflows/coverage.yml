@@ -24,6 +24,8 @@ jobs:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
           override: true
           components: llvm-tools-preview
+      - name: Install libelf-dev
+        run: sudo apt-get install libelf-dev
       - name: Install grcov
         uses: actions-rs/cargo@v1
         with:
